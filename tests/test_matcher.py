@@ -87,7 +87,8 @@ def test_fuzzy_match_po_number_variant():
     out = matcher.match(po, grn, inv, match_params=["po_number", "vendor_name", "line_item"])
 
     assert len(out) == 1
-    assert out.loc[0, "has_invoice"] is True
+    # Cast to bool to avoid identity issues with numpy.bool_
+    assert bool(out.loc[0, "has_invoice"]) is True
     assert out.loc[0, "match_confidence"] == "FUZZY"
 
 

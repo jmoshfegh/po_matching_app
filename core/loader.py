@@ -7,6 +7,8 @@ from typing import Dict, Iterable, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from core.pdf_extractor import PDFExtractor
+
 
 PO_KEYWORDS = ["PO Number", "Purchase Order", "PO No", "PO_ID"]
 GRN_KEYWORDS = ["GRN Number", "Receipt No", "Goods Receipt", "GRN_ID"]
@@ -64,6 +66,7 @@ class DataLoader:
 
     def __init__(self, alias_map: Optional[Dict[str, List[str]]] = None) -> None:
         self.alias_map = alias_map or ALIAS_MAP
+        self._pdf_extractor = PDFExtractor()
 
     def load_files(
         self,
@@ -74,7 +77,7 @@ class DataLoader:
         Parameters
         ----------
         file_paths:
-            Iterable of paths (Excel or CSV).
+            Iterable of paths (Excel, CSV, or PDF).
         explicit_types:
             Optional mapping of Path -> one of {"PO", "GRN", "INV"}.
             Used when auto-detection is ambiguous (UI can collect from user).
@@ -126,6 +129,9 @@ class DataLoader:
             return pd.read_excel(path)
         if suffix == ".csv":
             return pd.read_csv(path)
+        if suffix == ".pdf":
+            df, _, _, _ = self._pdf_extractor.pdf_to_dataframe(str(path))
+            return df
         raise ValueError(f"Unsupported file type: {suffix}")
 
     def _detect_document_type(
